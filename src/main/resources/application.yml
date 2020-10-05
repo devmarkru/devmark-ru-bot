@@ -1,0 +1,3 @@
+telegram:
+  botName: devmark_ru_bot
+  token: ${TOKEN}
