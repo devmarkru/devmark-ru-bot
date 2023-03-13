@@ -9,17 +9,15 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMar
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
 
 @Service
-class DevmarkBot : TelegramLongPollingBot() {
+class DevmarkBot(
+    @Value("\${telegram.token}")
+    token: String
+) : TelegramLongPollingBot(token) {
 
     @Value("\${telegram.botName}")
     private val botName: String = ""
 
-    @Value("\${telegram.token}")
-    private val token: String = ""
-
     override fun getBotUsername(): String = botName
-
-    override fun getBotToken(): String = token
 
     override fun onUpdateReceived(update: Update) {
         if (update.hasMessage()) {
@@ -40,13 +38,13 @@ class DevmarkBot : TelegramLongPollingBot() {
     }
 
     private fun sendNotification(chatId: Long, responseText: String) {
-        val responseMessage = SendMessage(chatId, responseText)
-        responseMessage.setParseMode("Markdown")
+        val responseMessage = SendMessage(chatId.toString(), responseText)
+        responseMessage.enableMarkdown(true)
         responseMessage.replyMarkup = getReplyMarkup(
-                listOf(
-                        listOf("Кнопка 1", "Кнопка 2"),
-                        listOf("Кнопка 3", "Кнопка 4")
-                )
+            listOf(
+                listOf("Кнопка 1", "Кнопка 2"),
+                listOf("Кнопка 3", "Кнопка 4")
+            )
         )
         execute(responseMessage)
     }
