@@ -10,8 +10,8 @@ import ru.devmark.bot.service.DevmarkBot
 class BotConfig {
 
     @Bean
-    fun telegramBotsApi(devmarkBot: DevmarkBot): TelegramBotsApi =
+    fun telegramBotsApi(bot: DevmarkBot): TelegramBotsApi =
         TelegramBotsApi(DefaultBotSession::class.java).apply {
-            registerBot(devmarkBot)
+            registerBot(bot)
         }
 }

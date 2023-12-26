@@ -1,61 +1,58 @@
 package ru.devmark.bot.service
 
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.stereotype.Service
-import org.telegram.telegrambots.bots.TelegramLongPollingBot
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage
+import org.springframework.stereotype.Component
+import org.telegram.telegrambots.extensions.bots.commandbot.TelegramLongPollingCommandBot
+import org.telegram.telegrambots.extensions.bots.commandbot.commands.BotCommand
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery
 import org.telegram.telegrambots.meta.api.objects.Update
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
+import ru.devmark.bot.handler.CallbackHandler
+import ru.devmark.bot.util.createMessage
 
-@Service
+@Component
 class DevmarkBot(
+    commands: Set<BotCommand>,
+    callbackHandlers: Set<CallbackHandler>,
     @Value("\${telegram.token}")
-    token: String
-) : TelegramLongPollingBot(token) {
+    token: String,
+) : TelegramLongPollingCommandBot(token) {
 
     @Value("\${telegram.botName}")
     private val botName: String = ""
 
+    private lateinit var handlerMapping: Map<String, CallbackHandler>
+
+    init {
+        registerAll(*commands.toTypedArray())
+        handlerMapping = callbackHandlers.associateBy { it.name.text }
+    }
+
     override fun getBotUsername(): String = botName
 
-    override fun onUpdateReceived(update: Update) {
+    override fun processNonCommandUpdate(update: Update) {
         if (update.hasMessage()) {
-            val message = update.message
-            val chatId = message.chatId
-            val responseText = if (message.hasText()) {
-                val messageText = message.text
-                when {
-                    messageText == "/start" -> "Добро пожаловать!"
-                    messageText.startsWith("Кнопка ") -> "Вы нажали кнопку"
-                    else -> "Вы написали: *$messageText*"
-                }
+            val chatId = update.message.chatId.toString()
+            if (update.message.hasText()) {
+                execute(createMessage(chatId, "Вы написали: *${update.message.text}*"))
             } else {
-                "Я понимаю только текст"
+                execute(createMessage(chatId, "Я понимаю только текст!"))
             }
-            sendNotification(chatId, responseText)
-        }
-    }
+        } else if (update.hasCallbackQuery()) {
+            val callbackQuery = update.callbackQuery
+            val callbackData = callbackQuery.data
 
-    private fun sendNotification(chatId: Long, responseText: String) {
-        val responseMessage = SendMessage(chatId.toString(), responseText)
-        responseMessage.enableMarkdown(true)
-        responseMessage.replyMarkup = getReplyMarkup(
-            listOf(
-                listOf("Кнопка 1", "Кнопка 2"),
-                listOf("Кнопка 3", "Кнопка 4")
-            )
-        )
-        execute(responseMessage)
-    }
+            val callbackQueryId = callbackQuery.id
+            execute(AnswerCallbackQuery(callbackQueryId))
 
-    private fun getReplyMarkup(allButtons: List<List<String>>): ReplyKeyboardMarkup {
-        val markup = ReplyKeyboardMarkup()
-        markup.keyboard = allButtons.map { rowButtons ->
-            val row = KeyboardRow()
-            rowButtons.forEach { rowButton -> row.add(rowButton) }
-            row
+            val callbackArguments = callbackData.split("|")
+            val callbackHandlerName = callbackArguments.first()
+
+            handlerMapping.getValue(callbackHandlerName)
+                .processCallbackData(
+                    this,
+                    callbackQuery,
+                    callbackArguments.subList(1, callbackArguments.size)
+                )
         }
-        return markup
     }
 }

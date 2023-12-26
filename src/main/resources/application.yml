@@ -1,3 +1,3 @@
 telegram:
-  botName: ru_devmark_test_bot
-  token: ${TOKEN}
+  botName: devmark_ru_test_bot
+  token: ${TELEGRAM_TOKEN}
