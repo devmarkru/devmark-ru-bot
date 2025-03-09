@@ -12,5 +12,6 @@
 
 ### Полезные ссылки
 * [Telegram-бот на Kotlin и Spring Boot](https://devmark.ru/article/telegram-bot-kotlin-spring-boot).
+* [Inline-кнопки в telegram-боте](https://devmark.ru/article/telegram-bot-kotlin-inline-buttons)
 * [Новости проекта](https://t.me/+RjrPWNUEwf8wZTMy) и короткие заметки.
 * Ещё больше статей по разработке ПО вы можете найти на моём сайте [devmark.ru](https://devmark.ru/).
