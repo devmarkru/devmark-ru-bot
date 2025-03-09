@@ -9,7 +9,7 @@ import ru.devmark.bot.model.CommandName
 import ru.devmark.bot.util.createMessage
 
 @Component
-class SumCommand : BotCommand(CommandName.SUM.text, "")  {
+class SumCommand : BotCommand(CommandName.SUM.text, "") {
 
     override fun execute(absSender: AbsSender, user: User, chat: Chat, arguments: Array<out String>) {
         val numbers = arguments.map { it.toInt() }

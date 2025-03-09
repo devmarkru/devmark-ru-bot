@@ -17,9 +17,11 @@ class ButtonsCommand : BotCommand(CommandName.BUTTONS.text, "") {
                 chat.id.toString(),
                 "Нажмите на одну из кнопок.",
                 listOf(
-                    listOf("Кнопка 1", "Кнопка 2"),
-                    listOf("Кнопка 3", "Кнопка 4"),
-                )
+                    "Кнопка 1",
+                    "Кнопка 2",
+                    "Кнопка 3",
+                    "Кнопка 4",
+                ).chunked(2)
             )
         )
     }

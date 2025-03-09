@@ -1,17 +1,17 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
-    id("org.springframework.boot") version "3.2.1"
-    id("io.spring.dependency-management") version "1.1.4"
-    kotlin("jvm") version "1.9.21"
-    kotlin("plugin.spring") version "1.9.21"
+    kotlin("jvm") version "1.9.25"
+    kotlin("plugin.spring") version "1.9.25"
+    id("org.springframework.boot") version "3.4.3"
+    id("io.spring.dependency-management") version "1.1.7"
 }
 
 group = "ru.devmark"
-version = "1.2.0"
+version = "1.3.0"
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
 }
 
 repositories {
@@ -20,19 +20,24 @@ repositories {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.telegram:telegrambots-spring-boot-starter:6.8.0")
-    implementation("org.telegram:telegrambotsextensions:6.8.0")
+    implementation("org.telegram:telegrambots-spring-boot-starter:6.9.7.1")
+    implementation("org.telegram:telegrambotsextensions:6.9.7.1")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        freeCompilerArgs += "-Xjsr305=strict"
-        jvmTarget = "21"
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict")
     }
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+tasks {
+    bootJar {
+        archiveFileName.set("telegram-bot.jar")
+    }
 }
