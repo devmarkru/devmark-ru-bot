@@ -2,8 +2,11 @@ package ru.devmark.bot.service
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import org.telegram.telegrambots.extensions.bots.commandbot.TelegramLongPollingCommandBot
+import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient
+import org.telegram.telegrambots.extensions.bots.commandbot.CommandLongPollingTelegramBot
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.BotCommand
+import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer
+import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.devmark.bot.handler.CallbackHandler
@@ -14,45 +17,47 @@ class DevmarkBot(
     commands: Set<BotCommand>,
     callbackHandlers: Set<CallbackHandler>,
     @Value("\${telegram.token}")
-    token: String,
-) : TelegramLongPollingCommandBot(token) {
-
+    private val token: String,
     @Value("\${telegram.botName}")
-    private val botName: String = ""
+    private val botName: String,
+) : CommandLongPollingTelegramBot(OkHttpTelegramClient(token), true, { botName }),
+    SpringLongPollingBot {
 
-    private lateinit var handlerMapping: Map<String, CallbackHandler>
+    private val handlerMapping: Map<String, CallbackHandler> =
+        callbackHandlers.associateBy { it.name.text }
 
     init {
         registerAll(*commands.toTypedArray())
-        handlerMapping = callbackHandlers.associateBy { it.name.text }
     }
-
-    override fun getBotUsername(): String = botName
 
     override fun processNonCommandUpdate(update: Update) {
         if (update.hasMessage()) {
             val chatId = update.message.chatId.toString()
             if (update.message.hasText()) {
-                execute(createMessage(chatId, "Вы написали: *${update.message.text}*"))
+                telegramClient.execute(createMessage(chatId, "Вы написали: *${update.message.text}*"))
             } else {
-                execute(createMessage(chatId, "Я понимаю только текст!"))
+                telegramClient.execute(createMessage(chatId, "Я понимаю только текст!"))
             }
         } else if (update.hasCallbackQuery()) {
             val callbackQuery = update.callbackQuery
             val callbackData = callbackQuery.data
 
             val callbackQueryId = callbackQuery.id
-            execute(AnswerCallbackQuery(callbackQueryId))
+            telegramClient.execute(AnswerCallbackQuery(callbackQueryId))
 
             val callbackArguments = callbackData.split("|")
             val callbackHandlerName = callbackArguments.first()
 
             handlerMapping.getValue(callbackHandlerName)
                 .processCallbackData(
-                    this,
+                    telegramClient,
                     callbackQuery,
                     callbackArguments.subList(1, callbackArguments.size)
                 )
         }
     }
+
+    override fun getBotToken(): String = token
+
+    override fun getUpdatesConsumer(): LongPollingUpdateConsumer = this
 }
