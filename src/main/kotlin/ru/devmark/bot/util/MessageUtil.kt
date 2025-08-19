@@ -5,6 +5,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
 
 fun createMessage(chatId: String, text: String) =
@@ -25,23 +26,29 @@ fun createMessageWithInlineButtons(chatId: String, text: String, inlineButtons: 
         }
 
 fun getSimpleKeyboard(allButtons: List<List<String>>): ReplyKeyboard =
-    ReplyKeyboardMarkup().apply {
-        keyboard = allButtons.map { rowButtons ->
-            val row = KeyboardRow()
-            rowButtons.forEach { rowButton -> row.add(rowButton) }
-            row
-        }
-        oneTimeKeyboard = true
-    }
+    ReplyKeyboardMarkup.builder()
+        .keyboard(
+            allButtons.map { rowButtons ->
+                KeyboardRow().apply { rowButtons.forEach { add(it) } }
+            }
+        )
+        .oneTimeKeyboard(true)
+        .build()
 
 fun getInlineKeyboard(allButtons: List<List<Pair<String, String>>>): InlineKeyboardMarkup =
-    InlineKeyboardMarkup().apply {
-        keyboard = allButtons.map { rowButtons ->
-            rowButtons.map { (data, buttonText) ->
-                InlineKeyboardButton().apply {
-                    text = buttonText
-                    callbackData = data
+    InlineKeyboardMarkup.builder()
+        .keyboard(
+            allButtons.map { rowButtons ->
+                InlineKeyboardRow().apply {
+                    rowButtons.forEach { (data, buttonText) ->
+                        add(
+                            InlineKeyboardButton.builder()
+                                .text(buttonText)
+                                .callbackData(data)
+                                .build()
+                        )
+                    }
                 }
             }
-        }
-    }
+        )
+        .build()
