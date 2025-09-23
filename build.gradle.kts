@@ -8,7 +8,7 @@ plugins {
 group = "ru.devmark"
 version = "1.3.0"
 
-val telegramBotsVersion = "9.0.0"
+val telegramBotsVersion = "9.1.0"
 
 java {
     toolchain {

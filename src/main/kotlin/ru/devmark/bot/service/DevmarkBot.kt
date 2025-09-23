@@ -1,14 +1,12 @@
 package ru.devmark.bot.service
 
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient
 import org.telegram.telegrambots.extensions.bots.commandbot.CommandLongPollingTelegramBot
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.BotCommand
-import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer
-import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery
 import org.telegram.telegrambots.meta.api.objects.Update
+import org.telegram.telegrambots.meta.generics.TelegramClient
+import ru.devmark.bot.config.TelegramConfig
 import ru.devmark.bot.handler.CallbackHandler
 import ru.devmark.bot.util.createMessage
 
@@ -16,12 +14,9 @@ import ru.devmark.bot.util.createMessage
 class DevmarkBot(
     commands: Set<BotCommand>,
     callbackHandlers: Set<CallbackHandler>,
-    @Value("\${telegram.token}")
-    private val token: String,
-    @Value("\${telegram.botName}")
-    private val botName: String,
-) : CommandLongPollingTelegramBot(OkHttpTelegramClient(token), true, { botName }),
-    SpringLongPollingBot {
+    telegramClient: TelegramClient,
+    telegramConfig: TelegramConfig,
+) : CommandLongPollingTelegramBot(telegramClient, true, { telegramConfig.botName }) {
 
     private val handlerMapping: Map<String, CallbackHandler> =
         callbackHandlers.associateBy { it.name.text }
@@ -56,8 +51,4 @@ class DevmarkBot(
                 )
         }
     }
-
-    override fun getBotToken(): String = token
-
-    override fun getUpdatesConsumer(): LongPollingUpdateConsumer = this
 }
