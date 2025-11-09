@@ -1,14 +1,14 @@
 plugins {
     kotlin("jvm") version "1.9.25"
     kotlin("plugin.spring") version "1.9.25"
-    id("org.springframework.boot") version "3.4.3"
+    id("org.springframework.boot") version "3.5.7"
     id("io.spring.dependency-management") version "1.1.7"
 }
 
 group = "ru.devmark"
 version = "1.3.0"
 
-val telegramBotsVersion = "9.1.0"
+val telegramBotsVersion = "9.2.0"
 
 java {
     toolchain {

@@ -5,7 +5,7 @@ COPY . /app
 RUN gradle build --no-daemon
 
 # Package stage
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 COPY --from=build /app/build/libs /app
